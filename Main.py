@@ -8,24 +8,30 @@ class Main:
     def __init__(self):
         print "Welcome to the main program"
 
-ABO().setBgForFirstIter()
-ABO().initParams([0.6, 0.5], 0.9)
-buffalos = [ABO() for i in range(1,10)]
+Abo = ABO(3) # 3 is the index of D
+Abo.setFirstIter()
+Abo.initParams([0.6, 0.5], 0.9)
+buffalos = [ABO(3) for i in range(1,10)]
+
+for i in range(1, 10):
+    for buffalo in buffalos:
+        if Abo.depot_index not in buffalo.getVisitedNodes(): #If buffalo has not finished the move, then do buffaloMove()
+            buffalo.buffaloMove()
+            # if len(buffalo.getAvailableIndex()) > 0:
+            #     buffalo.buffaloMove()
+            # else:
+            #     buffalo.buffaloBack()
+        # while( 3 not in buffalo.getVisitedNodes() ):
+        #     if len(buffalo.getAvailableIndex()) > 0:
+        #         buffalo.buffaloMove()
+        #     else:
+        #         buffalo.buffaloBack()
 
 for buffalo in buffalos:
-    while( 3 not in buffalo.getVisitedNodes() ):
-        if len(buffalo.getAvailableIndex()) > 0:
-            buffalo.buffaloMove()
-        else:
-            buffalo.buffaloBack()
+    buffalo.calculateTotalDistance()
 
-    total = 0
-    distances = []
-    for distance in buffalo.getVisitedEdges():
-        distances.append(buffalo.getDistance()[distance[0]][distance[1]])
-    for distance in distances:
-        total += distance
-
-    print "Total jarak tempuh kerbau ke-",buffalos.index(buffalo)," = ", total
-    print buffalo.getVisitedEdges()
+    print "Total jarak tempuh kerbau ",buffalos.index(buffalo)," = ", buffalo.getTotalDistance()
     print buffalo.getVisitedNodes()
+    print "bp = ", buffalo.bp
+
+print "bg ", Abo.bg

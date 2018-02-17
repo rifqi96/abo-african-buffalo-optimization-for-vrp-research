@@ -2,21 +2,17 @@ from __future__ import division
 import math
 from Graph import Graph
 import random
+import sys
 
 class ABO(Graph):
 
-    # available_index = []
-    # available_value = []
-    # visited_edges = []
-    # visited_nodes = []
-    # bp = []
+    # Static variable for this class
     bg = []
     lp = []
     speed = 0
-    # m = []
-    # w = []
+    depot_index = 3
 
-    def __init__(self):
+    def __init__(self, depot_index):
         self.Graph = Graph()
         self.available_index = []
         self.available_value = []
@@ -26,23 +22,22 @@ class ABO(Graph):
         self.bp = []
         self.m = []
         self.w = []
+        self.total_distance = 0
 
         # D is in position 3 within the Array
-        depot_index = 3
-        depot_val = self.getNodes()[depot_index]
-        bp_index = depot_index
-        self.bp = self.getNodes()[bp_index]
+        ABO.depot_index = depot_index
+        self.bp = self.getNodes()[ABO.depot_index]
         self.m = self.bp
-        ABO.current_index = bp_index
+        self.current_index = ABO.depot_index
 
         # get available nodes from bp
-        self.availableNodes(bp_index)
+        self.availableNodes(ABO.depot_index)
 
     def getCurrentIndex(self):
-        return ABO.current_index
+        return self.current_index
 
     def getNextIndex(self):
-        return ABO.next_index
+        return self.next_index
 
     def getVisitedEdges(self):
         return self.visited_edges
@@ -56,12 +51,15 @@ class ABO(Graph):
     def getAvailableValue(self):
         return self.available_value
 
-    def newMk(self, m, w, bg, bp):
+    def getTotalDistance(self):
+        return self.total_distance
+
+    def newMk(self, m, w, bp, bg):
         x = m[0] + ABO.lp[0] * (bg[0] - w[0]) + ABO.lp[1] * (bp[0] - w[0])
         y = m[1] + ABO.lp[0] * (bg[1] - w[1]) + ABO.lp[1] * (bp[1] - w[1])
         return [x,y]
 
-    def newWk(self, w, m):
+    def newWk(self, m, w):
         x = (w[0] + m[0]) / ABO.speed
         y = (w[1] + m[1]) / ABO.speed
         return [x,y]
@@ -86,33 +84,57 @@ class ABO(Graph):
         ABO.lp = lp
         ABO.speed = speed
 
-    def setBgForFirstIter(self):
+    def setFirstIter(self):
         # set the bg randomly for first iteration
         bg_index = random.choice(self.available_index)[1]
         ABO.bg = self.getNodes()[bg_index]
-        self.w = ABO.bg
-        ABO.next_index = bg_index
+
+    def allEdgesArePassed(self):
+        nodes = []
+        for node in self.getNodes():
+            nodes.append(self.getNodes().index(node))
+        index = nodes.index(ABO.depot_index)
+        del nodes[index]
+        for node in nodes:
+            if node not in self.visited_nodes:
+                return False
+        return True
 
     def buffaloMove(self):
-        ABO.next_index = random.choice(self.available_index)[1]
+        if len(self.available_index) > 0:
+            self.next_index = random.choice(self.available_index)[1]
 
-        # If the solution tried to finish but not all edges have been passed yet
-        if ABO.next_index == 3 and 0 not in self.visited_nodes or 1 not in self.visited_nodes or 2 not in self.visited_nodes or 4 not in self.visited_nodes:
-            self.removeDepotFromAvailable()
-            ABO.next_index = random.choice(self.available_index)[1]
-        
-        self.visited_edges.append([ABO.current_index, ABO.next_index])
-        self.visited_nodes.append(ABO.next_index)
-        ABO.current_index = self.visited_nodes[len(self.visited_nodes)-1]
-        self.availableNodes(ABO.current_index)
+            # If the solution tried to finish but not all edges have been passed yet
+            if self.next_index == ABO.depot_index and self.allEdgesArePassed() is False:
+                self.removeDepotFromAvailable()
+                self.next_index = random.choice(self.available_index)[1]
+            
+            self.visited_edges.append([self.current_index, self.next_index])
+            self.visited_nodes.append(self.next_index)
+            self.current_index = self.visited_nodes[len(self.visited_nodes)-1]
+            self.availableNodes(self.current_index)
+            if len(self.available_index) > 0:
+                # Do the math
+                buff_coor = self.getNodes()[self.current_index]
+                self.w = buff_coor
+                newMk = self.newMk(self.m, self.w, self.bp, ABO.bg)
+                newWk = self.newWk(self.m, self.w)
+                if self.fobj(newMk) < self.fobj(buff_coor):
+                    self.m = newMk
+                if self.fobj(newMk) < self.fobj(self.bp):
+                    self.bp = newMk
+                if self.fobj(newMk) < self.fobj(ABO.bg):
+                    ABO.bg = newMk
+        else:
+            self.buffaloBack()
 
     def buffaloBack(self):
         # Back step is a temporary variable which stores last step that gives empty available move, so that the algorithm can delete the selected index later
         self.back_step = self.visited_edges[len(self.visited_edges) - 1]
         del self.visited_edges[-1]
         del self.visited_nodes[-1]
-        ABO.current_index = self.visited_nodes[len(self.visited_nodes)-1]
-        self.availableNodes(ABO.current_index)
+        self.current_index = self.visited_nodes[len(self.visited_nodes)-1]
+        self.availableNodes(self.current_index)
 
     # check available nodes
     def availableNodes(self, current_index):
@@ -135,7 +157,14 @@ class ABO(Graph):
     # Remove depot from available options, it is used when the solution tried to finish itself to the depot but not all edges are completed yet
     def removeDepotFromAvailable(self):
         for option in self.available_index:
-            if option[1] == 3:
+            if option[1] == ABO.depot_index:
                 index = self.available_index.index(option)
                 del self.available_index[index]
                 del self.available_value[index]
+
+    def calculateTotalDistance(self):
+        distances = []
+        for distance in self.visited_edges:
+            distances.append(self.getDistance()[distance[0]][distance[1]])
+        for distance in distances:
+            self.total_distance += distance
