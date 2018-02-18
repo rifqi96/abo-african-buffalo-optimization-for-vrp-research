@@ -3,6 +3,7 @@ import math
 from Graph import Graph
 import random
 import sys
+import bisect
 
 class ABO(Graph):
 
@@ -11,6 +12,7 @@ class ABO(Graph):
     lp = []
     speed = 0
     depot_index = 3
+    bg_update_counter = 0
 
     def __init__(self, depot_index):
         self.Graph = Graph()
@@ -23,15 +25,16 @@ class ABO(Graph):
         self.m = []
         self.w = []
         self.total_distance = 0
-
         # D is in position 3 within the Array
         ABO.depot_index = depot_index
         self.bp = self.getNodes()[ABO.depot_index]
         self.m = self.bp
         self.current_index = ABO.depot_index
-
         # get available nodes from bp
         self.availableNodes(ABO.depot_index)
+        if len(self.available_index) < 1:
+            print "Program has been stopped, because there is no available move from current depot"
+            sys.exit(1)
 
     def getCurrentIndex(self):
         return self.current_index
@@ -88,6 +91,7 @@ class ABO(Graph):
         # set the bg randomly for first iteration
         bg_index = random.choice(self.available_index)[1]
         ABO.bg = self.getNodes()[bg_index]
+        ABO.bg_update_counter = 0
 
     def allEdgesArePassed(self):
         nodes = []
@@ -101,32 +105,137 @@ class ABO(Graph):
         return True
 
     def buffaloMove(self):
-        if len(self.available_index) > 0:
-            self.next_index = random.choice(self.available_index)[1]
+        repeat = True
+        while repeat is True:
+            if len(self.available_index) < 1:
+                self.backup_memory = {
+                    "m":self.m, "w":self.w, "bp":self.bp, "bg":ABO.bg
+                }
+                self.buffaloBack()
+            else:
+                self.backup_memory = None
+                repeat = False
+            m = self.m
+            w = self.getNodes()[self.current_index]
+            bp = self.bp
+            bg = ABO.bg
+            if self.backup_memory is not None:
+                m = self.backup_memory['m']
+                w = self.backup_memory['w']
+                bp = self.backup_memory['bp']
+                bg = self.backup_memory['bg']
 
-            # If the solution tried to finish but not all edges have been passed yet
-            if self.next_index == ABO.depot_index and self.allEdgesArePassed() is False:
+            available_nodes = []
+            for node in self.available_index:
+                available_nodes.append(node[1])
+            self.next_index = random.choice(available_nodes)
+            self.w = w
+            # If there is finish node on available nodes but not all edges have been passed yet
+            if ABO.depot_index in available_nodes and self.allEdgesArePassed() is False:
                 self.removeDepotFromAvailable()
-                self.next_index = random.choice(self.available_index)[1]
+                index = available_nodes.index(ABO.depot_index)
+                del available_nodes[index]
+                self.next_index = random.choice(available_nodes)
+
+            # Do the math
+            newMk = self.newMk(m, w, bp, bg)
+            newWk = self.newWk(m, w)
+
+            # next_index = 0
+            # counter = 0
+            # wk_fobj = self.fobj(newWk)
+            # difference = 0
+            # for index in available_nodes:
+            #     fobj = self.fobj(self.getNodes()[index])
+            #     if counter == 0:
+            #         next_index = index
+            #         difference = wk_fobj - fobj
+            #     else:
+            #         if difference < wk_fobj - self.fobj(self.getNodes()[index]):
+            #             difference = wk_fobj - self.fobj(self.getNodes()[index])
+            #             next_index = index
+            #     counter += 1
+            # self.next_index = next_index
+
+            # available_newWk = {
+            #     "nodes":available_nodes, "fobj":[]
+            # }
+            # for node in available_newWk['nodes']:
+            #     fobj = self.fobj(self.getNodes()[node])
+            #     available_newWk['fobj'].append(fobj)
+            # fobj_newWk = self.fobj(newWk)
+            # min_newWk = 0
+            # closest = 0
+            # for node in available_newWk['nodes']:
+            #     index = available_newWk['nodes'].index(node)
+            #     if index == 0:
+            #         closest = fobj_newWk - available_newWk['fobj'][index]
+            #         min_newWk = node
+            #     else:
+            #         if fobj_newWk - available_newWk['fobj'][index] < closest:
+            #             closest = fobj_newWk - available_newWk['fobj'][index]
+            #             min_newWk = node
+            # self.next_index = min_newWk
             
+            if self.fobj(newMk) < self.fobj(m):
+                self.m = newMk
+            if self.fobj(newMk) < self.fobj(bp):
+                self.bp = newMk
+
             self.visited_edges.append([self.current_index, self.next_index])
             self.visited_nodes.append(self.next_index)
             self.current_index = self.visited_nodes[len(self.visited_nodes)-1]
             self.availableNodes(self.current_index)
-            if len(self.available_index) > 0:
-                # Do the math
-                buff_coor = self.getNodes()[self.current_index]
-                self.w = buff_coor
-                newMk = self.newMk(self.m, self.w, self.bp, ABO.bg)
-                newWk = self.newWk(self.m, self.w)
-                if self.fobj(newMk) < self.fobj(buff_coor):
-                    self.m = newMk
-                if self.fobj(newMk) < self.fobj(self.bp):
-                    self.bp = newMk
-                if self.fobj(newMk) < self.fobj(ABO.bg):
-                    ABO.bg = newMk
-        else:
-            self.buffaloBack()
+            if len(self.available_index) < 1:
+                self.backup_memory = {
+                    "m":self.m, "w":self.w, "bp":self.bp, "bg":ABO.bg
+                }
+                self.buffaloBack()
+                repeat = True
+            else:
+                self.backup_memory = None
+                repeat = False
+
+        # if len(self.available_index) > 0:
+        #     self.next_index = random.choice(self.available_index)[1]
+        #     self.w = self.getNodes()[self.current_index]
+
+        #     # If the solution tried to finish but not all edges have been passed yet
+        #     if self.next_index == ABO.depot_index and self.allEdgesArePassed() is False:
+        #         self.removeDepotFromAvailable()
+        #         self.next_index = random.choice(self.available_index)[1]
+            
+        #     self.visited_edges.append([self.current_index, self.next_index])
+        #     self.visited_nodes.append(self.next_index)
+        #     self.current_index = self.visited_nodes[len(self.visited_nodes)-1]
+        #     self.availableNodes(self.current_index)
+        #     if len(self.available_index) > 0:
+        #         # Do the math
+        #         newMk = self.newMk(self.m, self.w, self.bp, ABO.bg)
+        #         newWk = self.newWk(self.m, self.w)
+        #         # print "fobj(newMk)",self.fobj(newMk),"fobj(current m)",self.fobj(self.m)
+        #         # print "m before", self.m
+        #         # print "bp before =", self.bp
+        #         if self.fobj(newMk) < self.fobj(self.m):
+        #             self.m = newMk
+        #         if self.fobj(newMk) < self.fobj(self.bp):
+        #             self.bp = newMk
+        #         # print "newMk ",newMk
+        #         # print "m after", self.m
+        #         # print "w =", self.w
+        #         # print "bp after =", self.bp
+        # else:
+        #     self.buffaloBack()
+
+    def bgUpdate(self):
+        if self.fobj(self.bp) < self.fobj(ABO.bg):
+            # print "bgUpdate ----"
+            # print "current bg",ABO.bg
+            ABO.bg = self.bp
+            # print "updated bg",ABO.bg
+            # print "visited nodes",self.visited_nodes
+            return True
+        return False
 
     def buffaloBack(self):
         # Back step is a temporary variable which stores last step that gives empty available move, so that the algorithm can delete the selected index later

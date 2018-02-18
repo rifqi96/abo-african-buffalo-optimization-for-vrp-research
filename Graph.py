@@ -16,25 +16,25 @@ class Graph:
         Graph.distance[0][0] = 0
         Graph.distance[0][1] = 5
         Graph.distance[0][2] = 8
-        Graph.distance[0][3] = 0
+        # Graph.distance[0][3] = 0
         Graph.distance[0][4] = 10
 
         #B
         Graph.distance[1][0] = 5
         Graph.distance[1][1] = 0
-        Graph.distance[1][2] = 0
+        # Graph.distance[1][2] = 0
         Graph.distance[1][3] = 6
         Graph.distance[1][4] = 11
 
         #C
         Graph.distance[2][0] = 8
-        Graph.distance[2][1] = 0
+        # Graph.distance[2][1] = 0
         Graph.distance[2][2] = 0
         Graph.distance[2][3] = 7
         Graph.distance[2][4] = 9
 
         #D
-        Graph.distance[3][0] = 0
+        # Graph.distance[3][0] = 0
         Graph.distance[3][1] = 6
         Graph.distance[3][2] = 7
         Graph.distance[3][3] = 0
@@ -58,7 +58,9 @@ class Graph:
                 y1 = locations[from_node][1]
                 x2 = locations[to_node][0]
                 y2 = locations[to_node][1]
-                Graph.distance[from_node][to_node] = 0 #It's supposed to self.calcDistance(x1,y1,x2,y2)
+                Graph.distance[from_node][to_node] = 0
+                # It's supposed to be:
+                # self.calcDistance(x1,y1,x2,y2)
     
     def calcDistance(self, x1, y1, x2, y2):
         # Manhattan distance
