@@ -11,60 +11,76 @@ from pprint import pprint
 class Main:
     def __init__(self):
         # Initiate Parameters
-        self.graph = Graph()
-        self.counter = 0
         self.depot_index = 0
         self.lp = [0.6, 0.5]
         self.speed = 0.9
         self.buffalo_size = 50
         self.trial_size = 50
         self.bg_not_updating = 3
-        self.Abo = None
-        self.update_counter = 0
         
-        buffalos = self.runABO()
-        self.printResult(buffalos)
+        # Sweep the graph, run the ABO and print the result, that's all :)
+        graph = Graph()
+        sweep = Sweep()
+        sweeped_graphs = sweep.run( graph )
+        sweeped_buffalos = []
+        if isinstance(sweeped_graphs, list) is False or len(sweeped_graphs) < 1:
+            print "Error on sweeped graphs"
+            exit()
+
+        for sweeped_graph in sweeped_graphs:
+            abo = self.runABO( sweeped_graph )
+            sweeped_buffalos.append(abo)
+
+        if isinstance(sweeped_buffalos, list) is False or len(sweeped_buffalos) < 1:
+            print "Error on sweeped buffalos"
+            exit()
+        for buffalo in sweeped_buffalos:
+            self.printResult(buffalo)
         
-    def runABO(self):
+    def runABO(self, graph):
         buffalos = None
-        while(self.counter < self.bg_not_updating):
-            self.Abo = ABO(self.depot_index, self.graph)
-            self.Abo.setFirstIter()
-            self.Abo.initParams(self.lp, self.speed)
-            buffalos = [ABO(self.depot_index, self.graph) for i in range(1,self.buffalo_size)]
-            self.update_counter = 0
+        counter = 0
+        while(counter < self.bg_not_updating):
+            Abo = ABO(self.depot_index, graph)
+            Abo.setFirstIter()
+            Abo.initParams(self.lp, self.speed)
+            buffalos = [ABO(self.depot_index, graph) for i in range(1,self.buffalo_size)]
+            update_counter = 0
             for i in range(1, self.trial_size):
                 for buffalo in buffalos:
-                    if self.Abo.depot_index not in buffalo.getVisitedNodes(): #If buffalo has not finished the move, then do buffaloMove()
+                    if Abo.depot_index not in buffalo.getVisitedNodes(): #If buffalo has not finished the move, then do buffaloMove()
                         buffalo.buffaloMove()
                 for buffalo in buffalos:
                     if buffalo.bgUpdate() is True:
-                        self.update_counter += 1
-                if self.update_counter > 0:
-                    self.Abo.bg_update_counter += 1
-                self.update_counter = 0
+                        update_counter += 1
+                if update_counter > 0:
+                    Abo.bg_update_counter += 1
+                update_counter = 0
 
-            self.counter = self.Abo.bg_update_counter
-        return buffalos
+            counter = Abo.bg_update_counter
+        return {
+            'abo': Abo,
+            'buffalos': buffalos
+        }
 
-    def printResult(self, buffalos):
-        if buffalos is None or isinstance(buffalos, list) is False:
+    def printResult(self, Abo):
+        if Abo is None or Abo['buffalos'] is None or isinstance(Abo['buffalos'], list) is False:
             print "Error"
             exit()
 
-        optimal_buffalo = buffalos[0]
+        optimal_buffalo = Abo['buffalos'][0]
         optimal_index = 0
-        for buffalo in buffalos:
+        for buffalo in Abo['buffalos']:
             buffalo.calculateTotalDistance()
 
-            print "Total jarak tempuh kerbau",buffalos.index(buffalo),"=", buffalo.getTotalDistance()
+            print "Total jarak tempuh kerbau",Abo['buffalos'].index(buffalo),"=", buffalo.getTotalDistance()
             print buffalo.getVisitedNodes()
             print "bp =", buffalo.bp
             if optimal_buffalo.getTotalDistance() > buffalo.getTotalDistance():
                 optimal_buffalo = buffalo
-                optimal_index = buffalos.index(buffalo)
-        print "bg", self.Abo.bg
-        print "update counter", self.Abo.bg_update_counter
+                optimal_index = Abo['buffalos'].index(buffalo)
+        print "bg", Abo['abo'].bg
+        print "update counter", Abo['abo'].bg_update_counter
         print "Kerbau teroptimal adalah kerbau ke",optimal_index,"dengan total jarak",optimal_buffalo.getTotalDistance()
 
 Main()

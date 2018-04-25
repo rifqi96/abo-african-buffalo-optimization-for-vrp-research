@@ -7,4 +7,11 @@ import bisect
 
 class Sweep:
     def __init__(self):
-        print "Sweep"
+        self.Graph = None
+
+    #static method
+    def run(self, graph):
+        if isinstance(graph, Graph) is False:
+            print "Please add correct graph"
+            exit()
+        return [graph]
