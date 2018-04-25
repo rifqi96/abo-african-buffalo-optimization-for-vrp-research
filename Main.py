@@ -4,16 +4,17 @@ from ABO import ABO
 import random
 import sys
 import bisect
+from pprint import pprint
 
 class Main:
     def __init__(self):
         print "Welcome to the main program"
 counter = 0
-while(counter < 1):
-    Abo = ABO(3) # 3 is the index of D
+while(counter < 3):
+    Abo = ABO(0) # 3 is the index of D
     Abo.setFirstIter()
     Abo.initParams([0.6, 0.5], 0.9)
-    buffalos = [ABO(3) for i in range(1,20)]
+    buffalos = [ABO(0) for i in range(1,50)]
     update_counter = 0
     for i in range(1, 50):
         for buffalo in buffalos:
@@ -42,3 +43,4 @@ for buffalo in buffalos:
 print "bg", Abo.bg
 print "update counter", Abo.bg_update_counter
 print "Kerbau teroptimal adalah kerbau ke",optimal_index,"dengan total jarak",optimal_buffalo.getTotalDistance()
+pprint(Abo.getPolar())

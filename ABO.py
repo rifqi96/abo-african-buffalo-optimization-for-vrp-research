@@ -62,6 +62,12 @@ class ABO(Graph):
         y = m[1] + ABO.lp[0] * (bg[1] - w[1]) + ABO.lp[1] * (bp[1] - w[1])
         return [x,y]
 
+    def democraticEq(self, m, w, bp, bg, range):
+        x = ( m[0] + ABO.lp[0] * (bg[0] - w[0]) + ABO.lp[1] * (bp[0] - w[0]) ) * range
+        y = ( m[1] + ABO.lp[0] * (bg[1] - w[1]) + ABO.lp[1] * (bp[1] - w[1]) ) * range
+        location = [x,y]
+        return self.fobj(location)
+
     def newWk(self, m, w):
         x = (w[0] + m[0]) / ABO.speed
         y = (w[1] + m[1]) / ABO.speed
@@ -140,42 +146,6 @@ class ABO(Graph):
             # Do the math
             newMk = self.newMk(m, w, bp, bg)
             newWk = self.newWk(m, w)
-
-            # next_index = 0
-            # counter = 0
-            # wk_fobj = self.fobj(newWk)
-            # difference = 0
-            # for index in available_nodes:
-            #     fobj = self.fobj(self.getNodes()[index])
-            #     if counter == 0:
-            #         next_index = index
-            #         difference = wk_fobj - fobj
-            #     else:
-            #         if difference < wk_fobj - self.fobj(self.getNodes()[index]):
-            #             difference = wk_fobj - self.fobj(self.getNodes()[index])
-            #             next_index = index
-            #     counter += 1
-            # self.next_index = next_index
-
-            # available_newWk = {
-            #     "nodes":available_nodes, "fobj":[]
-            # }
-            # for node in available_newWk['nodes']:
-            #     fobj = self.fobj(self.getNodes()[node])
-            #     available_newWk['fobj'].append(fobj)
-            # fobj_newWk = self.fobj(newWk)
-            # min_newWk = 0
-            # closest = 0
-            # for node in available_newWk['nodes']:
-            #     index = available_newWk['nodes'].index(node)
-            #     if index == 0:
-            #         closest = fobj_newWk - available_newWk['fobj'][index]
-            #         min_newWk = node
-            #     else:
-            #         if fobj_newWk - available_newWk['fobj'][index] < closest:
-            #             closest = fobj_newWk - available_newWk['fobj'][index]
-            #             min_newWk = node
-            # self.next_index = min_newWk
             
             if self.fobj(newMk) < self.fobj(m):
                 self.m = newMk
@@ -195,37 +165,6 @@ class ABO(Graph):
             else:
                 self.backup_memory = None
                 repeat = False
-
-        # if len(self.available_index) > 0:
-        #     self.next_index = random.choice(self.available_index)[1]
-        #     self.w = self.getNodes()[self.current_index]
-
-        #     # If the solution tried to finish but not all edges have been passed yet
-        #     if self.next_index == ABO.depot_index and self.allEdgesArePassed() is False:
-        #         self.removeDepotFromAvailable()
-        #         self.next_index = random.choice(self.available_index)[1]
-            
-        #     self.visited_edges.append([self.current_index, self.next_index])
-        #     self.visited_nodes.append(self.next_index)
-        #     self.current_index = self.visited_nodes[len(self.visited_nodes)-1]
-        #     self.availableNodes(self.current_index)
-        #     if len(self.available_index) > 0:
-        #         # Do the math
-        #         newMk = self.newMk(self.m, self.w, self.bp, ABO.bg)
-        #         newWk = self.newWk(self.m, self.w)
-        #         # print "fobj(newMk)",self.fobj(newMk),"fobj(current m)",self.fobj(self.m)
-        #         # print "m before", self.m
-        #         # print "bp before =", self.bp
-        #         if self.fobj(newMk) < self.fobj(self.m):
-        #             self.m = newMk
-        #         if self.fobj(newMk) < self.fobj(self.bp):
-        #             self.bp = newMk
-        #         # print "newMk ",newMk
-        #         # print "m after", self.m
-        #         # print "w =", self.w
-        #         # print "bp after =", self.bp
-        # else:
-        #     self.buffaloBack()
 
     def bgUpdate(self):
         if self.fobj(self.bp) < self.fobj(ABO.bg):
