@@ -1,11 +1,10 @@
 from __future__ import division
 import math
-from Graph import Graph
 import random
 import sys
 import bisect
 
-class ABO(Graph):
+class ABO:
 
     # Static variable for this class
     bg = []
@@ -14,8 +13,8 @@ class ABO(Graph):
     depot_index = 3
     bg_update_counter = 0
 
-    def __init__(self, depot_index):
-        self.Graph = Graph()
+    def __init__(self, depot_index, graph):
+        self.Graph = graph
         self.available_index = []
         self.available_value = []
         self.visited_edges = []
@@ -27,7 +26,7 @@ class ABO(Graph):
         self.total_distance = 0
         # D is in position 3 within the Array
         ABO.depot_index = depot_index
-        self.bp = self.getNodes()[ABO.depot_index]
+        self.bp = self.Graph.getNodes()[ABO.depot_index]
         self.m = self.bp
         self.current_index = ABO.depot_index
         # get available nodes from bp
@@ -35,6 +34,16 @@ class ABO(Graph):
         if len(self.available_index) < 1:
             print "Program has been stopped, because there is no available move from current depot"
             sys.exit(1)
+
+    def initParams(self, lp, speed):
+        ABO.lp = lp
+        ABO.speed = speed
+
+    def setFirstIter(self):
+        # set the bg randomly for first iteration
+        bg_index = random.choice(self.available_index)[1]
+        ABO.bg = self.Graph.getNodes()[bg_index]
+        ABO.bg_update_counter = 0
 
     def getCurrentIndex(self):
         return self.current_index
@@ -89,20 +98,10 @@ class ABO(Graph):
         f = term1 +term2 +s
         return f
 
-    def initParams(self, lp, speed):
-        ABO.lp = lp
-        ABO.speed = speed
-
-    def setFirstIter(self):
-        # set the bg randomly for first iteration
-        bg_index = random.choice(self.available_index)[1]
-        ABO.bg = self.getNodes()[bg_index]
-        ABO.bg_update_counter = 0
-
     def allEdgesArePassed(self):
         nodes = []
-        for node in self.getNodes():
-            nodes.append(self.getNodes().index(node))
+        for node in self.Graph.getNodes():
+            nodes.append(self.Graph.getNodes().index(node))
         index = nodes.index(ABO.depot_index)
         del nodes[index]
         for node in nodes:
@@ -122,7 +121,7 @@ class ABO(Graph):
                 self.backup_memory = None
                 repeat = False
             m = self.m
-            w = self.getNodes()[self.current_index]
+            w = self.Graph.getNodes()[self.current_index]
             bp = self.bp
             bg = ABO.bg
             if self.backup_memory is not None:
@@ -188,13 +187,13 @@ class ABO(Graph):
     def availableNodes(self, current_index):
         self.available_index = []
         self.available_value = []
-        for i in self.getDistance():
+        for i in self.Graph.getDistance():
             if i == current_index:
-                for j in self.getDistance()[i]:
-                    if self.getDistance()[i][j] != 0:
+                for j in self.Graph.getDistance()[i]:
+                    if self.Graph.getDistance()[i][j] != 0:
                         if [i,j] not in self.visited_edges and [j,i] not in self.visited_edges:
                             self.available_index.append([i, j])
-                            self.available_value.append(self.getDistance()[i][j])
+                            self.available_value.append(self.Graph.getDistance()[i][j])
                             # Check if there is a back step which has been stored before from buffaloMove() and it's in available move, so remove the back step from the available move options
                             if self.back_step in self.available_index:
                                 index = self.available_index.index(self.back_step)
@@ -213,6 +212,6 @@ class ABO(Graph):
     def calculateTotalDistance(self):
         distances = []
         for distance in self.visited_edges:
-            distances.append(self.getDistance()[distance[0]][distance[1]])
+            distances.append(self.Graph.getDistance()[distance[0]][distance[1]])
         for distance in distances:
             self.total_distance += distance

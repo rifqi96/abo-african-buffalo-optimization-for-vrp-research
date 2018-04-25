@@ -5,5 +5,6 @@ import random
 import sys
 import bisect
 
-class Sweep(Graph):
-    
+class Sweep:
+    def __init__(self):
+        print "Sweep"
