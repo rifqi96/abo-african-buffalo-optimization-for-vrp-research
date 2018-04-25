@@ -21,7 +21,7 @@ class Main:
         # Sweep the graph, run the ABO and print the result, that's all :)
         graph = Graph()
         sweep = Sweep()
-        sweeped_graphs = sweep.run( graph )
+        sweeped_graphs = sweep.run( graph, self.depot_index )
         sweeped_buffalos = []
         if isinstance(sweeped_graphs, list) is False or len(sweeped_graphs) < 1:
             print "Error on sweeped graphs"
