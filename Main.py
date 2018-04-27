@@ -46,27 +46,27 @@ class Main:
             print "Rute ke",sweeped_buffalos.index(buffalo)+1,"adalah:"
             self.printResult(buffalo)
         
-    def runABO(self, graph):
-        buffalos = None
-        counter = 0
-        while(counter < self.bg_not_updating):
-            Abo = ABO(self.depot_index, graph)
-            Abo.setFirstIter()
-            Abo.initParams(self.lp, self.speed)
-            buffalos = [ABO(self.depot_index, graph) for i in range(1,self.buffalo_size)]
+    def runABO(self, graph, counter = 0):
+        Abo = ABO(self.depot_index, graph)
+        Abo.setFirstIter()
+        Abo.initParams(self.lp, self.speed)
+        buffalos = [ABO(self.depot_index, graph) for i in range(1,self.buffalo_size)]
+        update_counter = 0
+        for i in range(1, self.trial_size):
+            for buffalo in buffalos:
+                buffalo.buffaloMove()
+            for buffalo in buffalos:
+                if buffalo.bgUpdate() is True:
+                    update_counter += 1
+            if update_counter > 0:
+                Abo.bg_update_counter += 1
             update_counter = 0
-            for i in range(1, self.trial_size):
-                for buffalo in buffalos:
-                    if Abo.depot_index not in buffalo.getVisitedNodes(): #If buffalo has not finished the move, then do buffaloMove()
-                        buffalo.buffaloMove()
-                for buffalo in buffalos:
-                    if buffalo.bgUpdate() is True:
-                        update_counter += 1
-                if update_counter > 0:
-                    Abo.bg_update_counter += 1
-                update_counter = 0
 
-            counter = Abo.bg_update_counter
+        counter = Abo.bg_update_counter
+
+        if counter < self.bg_not_updating:
+            return self.runABO(graph, counter)
+        
         return {
             'abo': Abo,
             'graph': graph,

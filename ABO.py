@@ -13,6 +13,7 @@ class ABO:
     depot_index = 3
     bg_update_counter = 0
 
+    ### Begin Initialization ###
     def __init__(self, depot_index, graph):
         self.Graph = graph
         self.available_index = []
@@ -44,7 +45,9 @@ class ABO:
         bg_index = random.choice(self.available_index)[1]
         ABO.bg = self.Graph.getNodes()[bg_index]
         ABO.bg_update_counter = 0
+    ### End Initialization ###
 
+    ### Begin Setter/Getter ###
     def getCurrentIndex(self):
         return self.current_index
 
@@ -65,7 +68,9 @@ class ABO:
 
     def getTotalDistance(self):
         return self.total_distance
+    ### End Setter/Getter ###
 
+    ### Begin Formula Functions ###
     def newMk(self, m, w, bp, bg):
         x = m[0] + ABO.lp[0] * (bg[0] - w[0]) + ABO.lp[1] * (bp[0] - w[0])
         y = m[1] + ABO.lp[0] * (bg[1] - w[1]) + ABO.lp[1] * (bp[1] - w[1])
@@ -97,7 +102,9 @@ class ABO:
         term2 = s*(1-t)*math.cos(x[0])
         f = term1 +term2 +s
         return f
+    ### End Formula Functions ###
 
+    ### Begin The Algorithm Functions ###
     def allEdgesArePassed(self):
         nodes = []
         for node in self.Graph.getNodes():
@@ -109,61 +116,67 @@ class ABO:
                 return False
         return True
 
-    def buffaloMove(self):
-        repeat = True
-        while repeat is True:
-            if len(self.available_index) < 1:
-                self.backup_memory = {
-                    "m":self.m, "w":self.w, "bp":self.bp, "bg":ABO.bg
-                }
-                self.buffaloBack()
-            else:
-                self.backup_memory = None
-                repeat = False
-            m = self.m
-            w = self.Graph.getNodes()[self.current_index]
-            bp = self.bp
-            bg = ABO.bg
-            if self.backup_memory is not None:
-                m = self.backup_memory['m']
-                w = self.backup_memory['w']
-                bp = self.backup_memory['bp']
-                bg = self.backup_memory['bg']
+    def buffaloMove(self, repeat = True):
+        if ABO.depot_index in self.visited_nodes: #If buffalo has not finished the move, then do buffaloMove()
+            return False
 
-            available_nodes = []
-            for node in self.available_index:
-                available_nodes.append(node[1])
+        if repeat is False:
+            return False
+
+        if len(self.available_index) < 1:
+            self.backup_memory = {
+                "m":self.m, "w":self.w, "bp":self.bp, "bg":ABO.bg
+            }
+            self.buffaloBack()
+        else:
+            self.backup_memory = None
+            repeat = False
+        m = self.m
+        w = self.Graph.getNodes()[self.current_index]
+        bp = self.bp
+        bg = ABO.bg
+        if self.backup_memory is not None:
+            m = self.backup_memory['m']
+            w = self.backup_memory['w']
+            bp = self.backup_memory['bp']
+            bg = self.backup_memory['bg']
+
+        available_nodes = []
+        for node in self.available_index:
+            available_nodes.append(node[1])
+        self.next_index = random.choice(available_nodes)
+        self.w = w
+        # If there is finish node on available nodes but not all edges have been passed yet
+        if ABO.depot_index in available_nodes and self.allEdgesArePassed() is False:
+            self.removeDepotFromAvailable()
+            index = available_nodes.index(ABO.depot_index)
+            del available_nodes[index]
             self.next_index = random.choice(available_nodes)
-            self.w = w
-            # If there is finish node on available nodes but not all edges have been passed yet
-            if ABO.depot_index in available_nodes and self.allEdgesArePassed() is False:
-                self.removeDepotFromAvailable()
-                index = available_nodes.index(ABO.depot_index)
-                del available_nodes[index]
-                self.next_index = random.choice(available_nodes)
 
-            # Do the math
-            newMk = self.newMk(m, w, bp, bg)
-            newWk = self.newWk(m, w)
-            
-            if self.fobj(newMk) < self.fobj(m):
-                self.m = newMk
-            if self.fobj(newMk) < self.fobj(bp):
-                self.bp = newMk
+        # Do the math
+        newMk = self.newMk(m, w, bp, bg)
+        newWk = self.newWk(m, w)
+        
+        if self.fobj(newMk) < self.fobj(m):
+            self.m = newMk
+        if self.fobj(newMk) < self.fobj(bp):
+            self.bp = newMk
 
-            self.visited_edges.append([self.current_index, self.next_index])
-            self.visited_nodes.append(self.next_index)
-            self.current_index = self.visited_nodes[len(self.visited_nodes)-1]
-            self.availableNodes(self.current_index)
-            if len(self.available_index) < 1:
-                self.backup_memory = {
-                    "m":self.m, "w":self.w, "bp":self.bp, "bg":ABO.bg
-                }
-                self.buffaloBack()
-                repeat = True
-            else:
-                self.backup_memory = None
-                repeat = False
+        self.visited_edges.append([self.current_index, self.next_index])
+        self.visited_nodes.append(self.next_index)
+        self.current_index = self.visited_nodes[len(self.visited_nodes)-1]
+        self.availableNodes(self.current_index)
+        if len(self.available_index) < 1:
+            self.backup_memory = {
+                "m":self.m, "w":self.w, "bp":self.bp, "bg":ABO.bg
+            }
+            self.buffaloBack()
+            repeat = True
+        else:
+            self.backup_memory = None
+            repeat = False
+
+        return self.buffaloMove(repeat)
 
     def bgUpdate(self):
         if self.fobj(self.bp) < self.fobj(ABO.bg):
@@ -215,3 +228,4 @@ class ABO:
             distances.append(self.Graph.getDistance()[distance[0]][distance[1]])
         for distance in distances:
             self.total_distance += distance
+    ### End The Algorithm Functions ###
