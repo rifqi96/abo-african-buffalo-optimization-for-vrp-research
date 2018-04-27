@@ -44,7 +44,7 @@ class Main:
         print "Demands table",graph.getDemands()
         for buffalo in sweeped_buffalos:
             print "Rute ke",sweeped_buffalos.index(buffalo)+1,"adalah:"
-            self.printResult(buffalo, sweeped_graphs[sweeped_buffalos.index(buffalo)])
+            self.printResult(buffalo)
         
     def runABO(self, graph):
         buffalos = None
@@ -69,10 +69,11 @@ class Main:
             counter = Abo.bg_update_counter
         return {
             'abo': Abo,
+            'graph': graph,
             'buffalos': buffalos
         }
 
-    def printResult(self, Abo, graph):
+    def printResult(self, Abo):
         if Abo is None or Abo['buffalos'] is None or isinstance(Abo['buffalos'], list) is False:
             print "Error"
             exit()
@@ -94,8 +95,8 @@ class Main:
         real_nodes = []
         real_graph = Graph()
         for i in xrange(len(visited_nodes)):
-            total_demands += graph.getDemands()[visited_nodes[i]]
-            real_nodes.append(real_graph.getNodes().index(graph.getNodes()[visited_nodes[i]]))
+            total_demands += Abo['graph'].getDemands()[visited_nodes[i]]
+            real_nodes.append(real_graph.getNodes().index(Abo['graph'].getNodes()[visited_nodes[i]]))
 
         # print "bg", Abo['abo'].bg
         # print "update counter", Abo['abo'].bg_update_counter
