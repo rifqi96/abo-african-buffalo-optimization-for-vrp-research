@@ -1,2 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+certifi = "==2018.4.16"
+click = "==6.7"
+gunicorn = "==19.7.1"
+itsdangerous = "==0.24"
+"pathlib2" = "==2.1.0"
+pipenv = "==11.10.1"
+six = "==1.11.0"
+virtualenv = "==15.2.0"
+virtualenv-clone = "==0.3.0"
+"web.py" = "==0.39"
+Flask = "==1.0"
+"Jinja2" = "==2.10"
+MarkupSafe = "==1.0"
+Werkzeug = "==0.14.1"
+
 [requires]
 python_version = "2.7"
