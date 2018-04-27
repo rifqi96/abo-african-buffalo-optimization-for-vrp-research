@@ -14,15 +14,17 @@ class Main:
         self.depot_index = 0
         self.lp = [0.6, 0.5]
         self.speed = 0.9
-        self.buffalo_size = 50
+        self.buffalo_size = 200
         self.trial_size = 50
         self.bg_not_updating = 3
+        self.max_demands = 3000
         
         # Sweep the graph, run the ABO and print the result, that's all :)
         graph = Graph()
         sweep = Sweep()
-        sweeped_graphs = sweep.run( graph, self.depot_index )
+        sweeped_graphs = sweep.run( graph, self.depot_index, self.max_demands )
         sweeped_buffalos = []
+
         if isinstance(sweeped_graphs, list) is False or len(sweeped_graphs) < 1:
             print "Error on sweeped graphs"
             exit()
@@ -34,8 +36,15 @@ class Main:
         if isinstance(sweeped_buffalos, list) is False or len(sweeped_buffalos) < 1:
             print "Error on sweeped buffalos"
             exit()
+
+        if len(sweeped_buffalos) != len(sweeped_graphs):
+            print "Buffalos and graphs total must be same"
+            exit()
+
+        print "Demands table",graph.getDemands()
         for buffalo in sweeped_buffalos:
-            self.printResult(buffalo)
+            print "Rute ke",sweeped_buffalos.index(buffalo)+1,"adalah:"
+            self.printResult(buffalo, sweeped_graphs[sweeped_buffalos.index(buffalo)])
         
     def runABO(self, graph):
         buffalos = None
@@ -63,7 +72,7 @@ class Main:
             'buffalos': buffalos
         }
 
-    def printResult(self, Abo):
+    def printResult(self, Abo, graph):
         if Abo is None or Abo['buffalos'] is None or isinstance(Abo['buffalos'], list) is False:
             print "Error"
             exit()
@@ -73,14 +82,25 @@ class Main:
         for buffalo in Abo['buffalos']:
             buffalo.calculateTotalDistance()
 
-            print "Total jarak tempuh kerbau",Abo['buffalos'].index(buffalo),"=", buffalo.getTotalDistance()
-            print buffalo.getVisitedNodes()
-            print "bp =", buffalo.bp
+            # print "Total jarak tempuh kerbau",Abo['buffalos'].index(buffalo),"=", buffalo.getTotalDistance()
+            # print buffalo.getVisitedNodes()
+            # print "bp =", buffalo.bp
             if optimal_buffalo.getTotalDistance() > buffalo.getTotalDistance():
                 optimal_buffalo = buffalo
                 optimal_index = Abo['buffalos'].index(buffalo)
-        print "bg", Abo['abo'].bg
-        print "update counter", Abo['abo'].bg_update_counter
+        # Calculate total demands
+        total_demands = 0
+        visited_nodes = optimal_buffalo.getVisitedNodes()
+        real_nodes = []
+        real_graph = Graph()
+        for i in xrange(len(visited_nodes)):
+            total_demands += graph.getDemands()[visited_nodes[i]]
+            real_nodes.append(real_graph.getNodes().index(graph.getNodes()[visited_nodes[i]]))
+
+        # print "bg", Abo['abo'].bg
+        # print "update counter", Abo['abo'].bg_update_counter
         print "Kerbau teroptimal adalah kerbau ke",optimal_index,"dengan total jarak",optimal_buffalo.getTotalDistance()
+        print "Langkah tempuh kerbau ke",optimal_index,"adalah",real_nodes
+        print "Total demands:",total_demands
 
 Main()

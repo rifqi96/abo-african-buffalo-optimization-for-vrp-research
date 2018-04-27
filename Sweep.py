@@ -5,20 +5,54 @@ import random
 import sys
 import bisect
 from pprint import pprint
+from operator import itemgetter
 
 class Sweep:
-    polar = {}
-    
     def __init__(self):
         self.Graph = None
 
-    def run(self, graph, center_node):
+    def run(self, graph, center_node, max_demands):
         if isinstance(graph, Graph) is False:
             print "Please add correct graph"
             exit()
         sweeped_graphs = []
         self.createPolar(graph, center_node)
-        
+        sorted_polar = sorted(graph.getPolar(), key=itemgetter('deg'))
+        del sorted_polar[0]
+        size = len(sorted_polar)
+        all_used = False
+        while( all_used is False ):
+            sweeped_locations = []
+            curr_demands = 0
+            for i in xrange(size):
+                if sorted_polar[i]['used'] is True:
+                    continue
+                if max_demands >= curr_demands + sorted_polar[i]['demands']:
+                    curr_demands += sorted_polar[i]['demands']
+                    sorted_polar[i]['used'] = True
+                    sweeped_locations.append(sorted_polar[i])
+
+            # Create graph by sweeped_locations
+            new_graph = Graph()
+            new_nodes = [
+                [0, 0] # Put back the depot
+            ]
+            new_demands = [0]
+            for node in sweeped_locations:
+                new_nodes.append(node['location'])
+                new_demands.append(node['demands'])
+            new_graph.setNodes(new_nodes)
+            new_graph.setDemands(new_demands)
+            new_graph.createDistance(new_nodes)
+            sweeped_graphs.append(new_graph)
+            
+            # Check if all locations are used
+            for i in xrange(size):
+                if sorted_polar[i]['used'] is False:
+                    break
+                if i == len(sorted_polar) - 1 and sorted_polar[i]['used'] is True:
+                    all_used = True
+                    break
         return sweeped_graphs
 
     def createPolar(self, graph, center_node):
@@ -35,7 +69,7 @@ class Sweep:
             else:
                 angle = 0.0
             polar.append({
-                'r':r, 'deg':deg
+                'r':r, 'deg':deg, 'location': locations[i], 'demands': graph.getDemands()[i], 'used': False
             })
             # polar[i]['angle'] = angle
         graph.setPolar(polar)

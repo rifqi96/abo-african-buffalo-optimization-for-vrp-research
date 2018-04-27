@@ -4,13 +4,9 @@ import sys
 import bisect
 
 class Graph:
-    nodes = []
-    polar = {}
-    demands = []
-    distance = {}
 
     def __init__(self):
-        Graph.nodes = [
+        self.nodes = [
             [0, 0],
             [-0.009275, -0.033396],
             [-0.00138, -0.052539],
@@ -22,7 +18,7 @@ class Graph:
             [-0.167362, -0.179096],
             [-0.167075, -0.175814]
         ]
-        Graph.demands = [
+        self.demands = [
             0,
             189,
             270,
@@ -34,26 +30,27 @@ class Graph:
             995,
             405
         ]
+        self.distance = {}
 
-        if len(Graph.nodes) != len(Graph.demands):
+        if len(self.nodes) != len(self.demands):
             print "Demands and nodes must be related"
             exit()
 
-        # self.longLatToXY(Graph.nodes, 3) # Because the data are XY already
-        self.createDistance(Graph.nodes)
+        # self.longLatToXY(self.nodes, 3) # Because the data are XY already
+        self.createDistance(self.nodes)
 
     def createDistance(self, locations):
         """Initialize distance array."""
         size = len(locations)
 
         for from_node in xrange(size):
-            Graph.distance[from_node] = {}
+            self.distance[from_node] = {}
             for to_node in xrange(size):
                 x1 = locations[from_node][0]
                 y1 = locations[from_node][1]
                 x2 = locations[to_node][0]
                 y2 = locations[to_node][1]
-                Graph.distance[from_node][to_node] = self.calcDistance(x1,y1,x2,y2)
+                self.distance[from_node][to_node] = self.calcDistance(x1,y1,x2,y2)
 
     def longLatToXY(self, coors, center_arr):
         center_coor = coors[center_arr]
@@ -62,7 +59,7 @@ class Graph:
             x = coor[0] - center_coor[0]
             y = coor[1] - center_coor[1]
             xy_nodes.append([x,y])
-        Graph.nodes = xy_nodes
+        self.nodes = xy_nodes
     
     def calcDistance(self, x1, y1, x2, y2):
         # Manhattan distance
@@ -70,25 +67,25 @@ class Graph:
         return dist
 
     def setNodes(self, nodes):
-        Graph.nodes = nodes
+        self.nodes = nodes
     
     def getNodes(self):
-        return Graph.nodes
+        return self.nodes
 
     def setPolar(self, polar):
-        Graph.polar = polar
+        self.polar = polar
 
     def getPolar(self):
-        return Graph.polar
+        return self.polar
 
     def setDemands(self, demands):
-        Graph.demands = demands
+        self.demands = demands
     
     def getDemands(self):
-        return Graph.demands
+        return self.demands
 
     def setDistance(self, distance):
-        Graph.distance = distance
+        self.distance = distance
     
     def getDistance(self):
-        return Graph.distance
+        return self.distance
