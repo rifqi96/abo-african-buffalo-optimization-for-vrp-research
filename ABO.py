@@ -3,6 +3,7 @@ import math
 import random
 import sys
 import bisect
+from pprint import pprint
 
 class ABO:
 
@@ -105,24 +106,10 @@ class ABO:
     ### End Formula Functions ###
 
     ### Begin The Algorithm Functions ###
-    def allEdgesArePassed(self):
-        nodes = []
-        for node in self.Graph.getNodes():
-            nodes.append(self.Graph.getNodes().index(node))
-        index = nodes.index(ABO.depot_index)
-        del nodes[index]
-        for node in nodes:
-            if node not in self.visited_nodes:
-                return False
-        return True
-
-    def buffaloMove(self, repeat = True):
-        if ABO.depot_index in self.visited_nodes: #If buffalo has not finished the move, then do buffaloMove()
+    def buffaloMove(self):
+        repeat = True
+        if ABO.depot_index in self.visited_nodes: #If depot has been visited already, then stop the loop
             return False
-
-        if repeat is False:
-            return False
-
         if len(self.available_index) < 1:
             self.backup_memory = {
                 "m":self.m, "w":self.w, "bp":self.bp, "bg":ABO.bg
@@ -131,6 +118,7 @@ class ABO:
         else:
             self.backup_memory = None
             repeat = False
+
         m = self.m
         w = self.Graph.getNodes()[self.current_index]
         bp = self.bp
@@ -164,19 +152,13 @@ class ABO:
 
         self.visited_edges.append([self.current_index, self.next_index])
         self.visited_nodes.append(self.next_index)
-        self.current_index = self.visited_nodes[len(self.visited_nodes)-1]
+        self.current_index = self.next_index
         self.availableNodes(self.current_index)
-        if len(self.available_index) < 1:
-            self.backup_memory = {
-                "m":self.m, "w":self.w, "bp":self.bp, "bg":ABO.bg
-            }
-            self.buffaloBack()
-            repeat = True
-        else:
-            self.backup_memory = None
-            repeat = False
 
-        return self.buffaloMove(repeat)
+        if repeat is False:
+            return False
+            
+        return self.buffaloMove()
 
     def bgUpdate(self):
         if self.fobj(self.bp) < self.fobj(ABO.bg):
@@ -201,18 +183,21 @@ class ABO:
         self.available_index = []
         self.available_value = []
         for i in self.Graph.getDistance():
-            if i == current_index:
-                for j in self.Graph.getDistance()[i]:
-                    if self.Graph.getDistance()[i][j] != 0:
-                        if [i,j] not in self.visited_edges and [j,i] not in self.visited_edges:
-                            self.available_index.append([i, j])
-                            self.available_value.append(self.Graph.getDistance()[i][j])
-                            # Check if there is a back step which has been stored before from buffaloMove() and it's in available move, so remove the back step from the available move options
-                            if self.back_step in self.available_index:
-                                index = self.available_index.index(self.back_step)
-                                del self.available_index[index]
-                                del self.available_value[index]
-                                self.back_step = [] #Clear and empty the back step again
+            if i != current_index:
+                continue
+            for j in self.Graph.getDistance()[i]:
+                if self.Graph.getDistance()[i][j] == 0:
+                    continue
+                # if [i,j] not in self.visited_edges and [j,i] not in self.visited_edges: # Activate this if you want to make visited nodes can be available if there is another way through different edges
+                if j not in self.visited_nodes:
+                    self.available_index.append([i, j])
+                    self.available_value.append(self.Graph.getDistance()[i][j])
+        # Check if there is a back step which has been stored before from buffaloMove() and it's in available move, so remove the back step from the available move options
+        if self.back_step in self.available_index:
+            index = self.available_index.index(self.back_step)
+            del self.available_index[index]
+            del self.available_value[index]
+            self.back_step = [] #Clear and empty the back step again
                     
     # Remove depot from available options, it is used when the solution tried to finish itself to the depot but not all edges are completed yet
     def removeDepotFromAvailable(self):
@@ -221,6 +206,17 @@ class ABO:
                 index = self.available_index.index(option)
                 del self.available_index[index]
                 del self.available_value[index]
+
+    def allEdgesArePassed(self):
+        nodes = []
+        for node in self.Graph.getNodes():
+            nodes.append(self.Graph.getNodes().index(node))
+        index = nodes.index(ABO.depot_index)
+        del nodes[index]
+        for node in nodes:
+            if node not in self.visited_nodes:
+                return False
+        return True
 
     def calculateTotalDistance(self):
         distances = []
