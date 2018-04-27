@@ -1,11 +1,9 @@
-from __future__ import division
-import math
+import os
+import sys
+sys.path.insert(0, os.path.dirname(__file__)+'Models')
 from ABO import ABO
 from Graph import Graph
 from Sweep import Sweep
-import random
-import sys
-import bisect
 from pprint import pprint
 
 class Main:
@@ -20,31 +18,28 @@ class Main:
         self.max_demands = 3000
         
         # Sweep the graph, run the ABO and print the result, that's all :)
-        graph = Graph()
-        sweep = Sweep()
-        sweeped_graphs = sweep.run( graph, self.depot_index, self.max_demands )
-        sweeped_buffalos = []
+        self.graph = Graph()
+        self.sweep = Sweep()
+        self.sweeped_graphs = self.sweep.run( self.graph, self.depot_index, self.max_demands )
+        self.sweeped_buffalos = []
 
-        if isinstance(sweeped_graphs, list) is False or len(sweeped_graphs) < 1:
+        self.results = []
+
+        if isinstance(self.sweeped_graphs, list) is False or len(self.sweeped_graphs) < 1:
             print "Error on sweeped graphs"
             exit()
 
-        for sweeped_graph in sweeped_graphs:
+        for sweeped_graph in self.sweeped_graphs:
             abo = self.runABO( sweeped_graph )
-            sweeped_buffalos.append(abo)
+            self.sweeped_buffalos.append(abo)
 
-        if isinstance(sweeped_buffalos, list) is False or len(sweeped_buffalos) < 1:
+        if isinstance(self.sweeped_buffalos, list) is False or len(self.sweeped_buffalos) < 1:
             print "Error on sweeped buffalos"
             exit()
 
-        if len(sweeped_buffalos) != len(sweeped_graphs):
+        if len(self.sweeped_buffalos) != len(self.sweeped_graphs):
             print "Buffalos and graphs total must be same"
             exit()
-
-        print "Demands table",graph.getDemands()
-        for buffalo in sweeped_buffalos:
-            print "Rute ke",sweeped_buffalos.index(buffalo)+1,"adalah:"
-            self.printResult(buffalo)
         
     def runABO(self, graph, counter = 0):
         Abo = ABO(self.depot_index, graph)
@@ -73,7 +68,7 @@ class Main:
             'buffalos': buffalos
         }
 
-    def printResult(self, Abo):
+    def getResult(self, Abo):
         if Abo is None or Abo['buffalos'] is None or isinstance(Abo['buffalos'], list) is False:
             print "Error"
             exit()
@@ -93,10 +88,9 @@ class Main:
         total_demands = 0
         visited_nodes = optimal_buffalo.getVisitedNodes()
         real_nodes = []
-        real_graph = Graph()
         for i in xrange(len(visited_nodes)):
             total_demands += Abo['graph'].getDemands()[visited_nodes[i]]
-            real_nodes.append(real_graph.getNodes().index(Abo['graph'].getNodes()[visited_nodes[i]]))
+            real_nodes.append(self.graph.getNodes().index(Abo['graph'].getNodes()[visited_nodes[i]]))
 
         # print "bg", Abo['abo'].bg
         # print "update counter", Abo['abo'].bg_update_counter
@@ -104,4 +98,17 @@ class Main:
         print "Langkah tempuh kerbau ke",optimal_index,"adalah",real_nodes
         print "Total demands:",total_demands
 
-Main()
+        self.results.append({
+            'buffalo':optimal_buffalo,
+            'buffalo_no':optimal_index,
+            'real_nodes':real_nodes,
+            'graph':Abo['graph']
+        })
+
+    def printResult(self):
+        print "Demands table",self.graph.getDemands()
+        for buffalo in self.sweeped_buffalos:
+            print "Rute ke",self.sweeped_buffalos.index(buffalo)+1,"adalah:"
+            self.getResult(buffalo)
+
+Main().printResult()
