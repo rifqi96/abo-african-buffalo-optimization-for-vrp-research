@@ -28,18 +28,9 @@ def results():
         response = jsonify(data)
         return response
 
-@app.route('/results/<depot_index>/<lp1>/<lp2>/<speed>/<buffalo_size>/<trial_size>/<bg_not_updating>/<max_demands>', methods=['GET','POST'])
+@app.route('/results/<int:depot_index>/<float:lp1>/<float:lp2>/<float:speed>/<int:buffalo_size>/<int:trial_size>/<int:bg_not_updating>/<int:max_demands>', methods=['GET','POST'])
 def customResults(depot_index, lp1, lp2, speed, buffalo_size, trial_size, bg_not_updating, max_demands):
     with app.app_context():
-        depot_index = int(depot_index)
-        lp1 = float(lp1)
-        lp2 = float(lp2)
-        speed = float(speed)
-        buffalo_size = int(buffalo_size)
-        trial_size = int(trial_size)
-        bg_not_updating = int(bg_not_updating)
-        max_demands = int(max_demands)
-
         data = []
         main = Main()
         results = main.generateResults(depot_index, [lp1, lp2], speed, buffalo_size, trial_size, bg_not_updating, max_demands)
