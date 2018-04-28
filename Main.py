@@ -1,5 +1,5 @@
 import os, sys
-sys.path.insert(0, os.path.dirname(__file__)+'Models')
+sys.path.append(os.path.dirname(__file__)+'/Models/')
 from ABO import ABO
 from Graph import Graph
 from Sweep import Sweep
@@ -15,30 +15,21 @@ class Main:
         self.trial_size = 50
         self.bg_not_updating = 3
         self.max_demands = 3000
-        
-        # Sweep the graph, run the ABO and print the result, that's all :)
+
         self.graph = Graph()
         self.sweep = Sweep()
         self.sweeped_graphs = self.sweep.run( self.graph, self.depot_index, self.max_demands )
         self.sweeped_buffalos = []
 
         self.results = []
-
-        if isinstance(self.sweeped_graphs, list) is False or len(self.sweeped_graphs) < 1:
-            print "Error on sweeped graphs"
-            exit()
-
-        for sweeped_graph in self.sweeped_graphs:
-            abo = self.runABO( sweeped_graph )
-            self.sweeped_buffalos.append(abo)
-
-        if isinstance(self.sweeped_buffalos, list) is False or len(self.sweeped_buffalos) < 1:
-            print "Error on sweeped buffalos"
-            exit()
-
-        if len(self.sweeped_buffalos) != len(self.sweeped_graphs):
-            print "Buffalos and graphs total must be same"
-            exit()
+        
+        # Generate the results!
+        results = self.generateResults(self.depot_index, self.lp, self.speed, self.buffalo_size, self.trial_size, self.bg_not_updating, self.max_demands)
+        if isinstance(results, dict):
+            if results['status'] is False:
+                print results['message']
+            else:
+                print self.printResult()
         
     def runABO(self, graph, counter = 0):
         Abo = ABO(self.depot_index, graph)
@@ -67,7 +58,7 @@ class Main:
             'buffalos': buffalos
         }
 
-    def getResult(self, Abo):
+    def generateResult(self, Abo):
         if Abo is None or Abo['buffalos'] is None or isinstance(Abo['buffalos'], list) is False:
             print "Error"
             exit()
@@ -76,10 +67,6 @@ class Main:
         optimal_index = 0
         for buffalo in Abo['buffalos']:
             buffalo.calculateTotalDistance()
-
-            # print "Total jarak tempuh kerbau",Abo['buffalos'].index(buffalo),"=", buffalo.getTotalDistance()
-            # print buffalo.getVisitedNodes()
-            # print "bp =", buffalo.bp
             if optimal_buffalo.getTotalDistance() > buffalo.getTotalDistance():
                 optimal_buffalo = buffalo
                 optimal_index = Abo['buffalos'].index(buffalo)
@@ -91,23 +78,71 @@ class Main:
             total_demands += Abo['graph'].getDemands()[visited_nodes[i]]
             real_nodes.append(self.graph.getNodes().index(Abo['graph'].getNodes()[visited_nodes[i]]))
 
-        # print "bg", Abo['abo'].bg
-        # print "update counter", Abo['abo'].bg_update_counter
-        print "Kerbau teroptimal adalah kerbau ke",optimal_index,"dengan total jarak",optimal_buffalo.getTotalDistance()
-        print "Langkah tempuh kerbau ke",optimal_index,"adalah",real_nodes
-        print "Total demands:",total_demands
-
         self.results.append({
             'buffalo':optimal_buffalo,
             'buffalo_no':optimal_index,
             'real_nodes':real_nodes,
+            'total_demands':total_demands,
             'graph':Abo['graph']
         })
 
+
+    # For API
+    def generateResults(self, depot_index=0, lp = [0.6, 0.5], speed = 0.9, buffalo_size = 200, trial_size = 50, bg_not_updating = 3, max_demands = 3000):
+        # Initiate Parameters
+        self.depot_index = depot_index
+        self.lp = lp
+        self.speed = speed
+        self.buffalo_size = buffalo_size
+        self.trial_size = trial_size
+        self.bg_not_updating = bg_not_updating
+        self.max_demands = max_demands
+        
+        # Sweep the graph, run the ABO and print the result, that's all :)
+        self.graph = Graph()
+        self.sweep = Sweep()
+        self.sweeped_graphs = self.sweep.run( self.graph, self.depot_index, self.max_demands )
+        self.sweeped_buffalos = []
+
+        self.results = []
+
+        if isinstance(self.sweeped_graphs, list) is False or len(self.sweeped_graphs) < 1:
+            return {
+                'status':False,
+                'message':"Error on sweeped graphs"
+            }
+
+        for sweeped_graph in self.sweeped_graphs:
+            abo = self.runABO( sweeped_graph )
+            self.sweeped_buffalos.append(abo)
+
+        if isinstance(self.sweeped_buffalos, list) is False or len(self.sweeped_buffalos) < 1:
+            return {
+                'status':False,
+                'message':"Error on sweeped buffalos"
+            }
+
+        if len(self.sweeped_buffalos) != len(self.sweeped_graphs):
+            return {
+                'status':False,
+                'message':"Buffalos and graphs total must be same"
+            }
+
+        # Generate the result!
+        for buffalo in self.sweeped_buffalos:
+            self.generateResult(buffalo)
+
+        return {
+            'status':True,
+            'data':self.results
+        }
+
     def printResult(self):
         print "Demands table",self.graph.getDemands()
-        for buffalo in self.sweeped_buffalos:
-            print "Rute ke",self.sweeped_buffalos.index(buffalo)+1,"adalah:"
-            self.getResult(buffalo)
+        for Abo in self.results:
+            print "Rute ke",self.results.index(Abo)+1,"adalah:"
+            print "Kerbau teroptimal adalah kerbau ke",Abo['buffalo_no'],"dengan total jarak",Abo['buffalo'].getTotalDistance()
+            print "Langkah tempuh kerbau ke",Abo['buffalo_no'],"adalah",Abo['real_nodes']
+            print "Total demands:",Abo['total_demands']
 
-Main().printResult()
+# Main().printResult()
