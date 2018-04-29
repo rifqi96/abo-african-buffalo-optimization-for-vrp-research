@@ -1,5 +1,3 @@
-import os, sys
-sys.path.append(os.path.dirname(__file__)+'/Models/')
 from ABO import ABO
 from Graph import Graph
 from Sweep import Sweep
