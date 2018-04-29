@@ -69,7 +69,8 @@ def getNodes():
             data.append({
                 'name':graph.getLocationNames()[i],
                 'coor':graph.getLongLat()[i],
-                'node':graph.getNodes()[i]
+                'node':graph.getNodes()[i],
+                'demands':graph.getDemands()[i]
             })
         return jsonify(data)
 
