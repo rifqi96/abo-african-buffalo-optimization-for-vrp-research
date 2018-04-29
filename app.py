@@ -5,7 +5,7 @@ from Graph import Graph
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'this_should_be_configured')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'abo-vrp-anya')
 
 
 ###
