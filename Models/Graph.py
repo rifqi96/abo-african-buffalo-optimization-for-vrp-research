@@ -29,6 +29,18 @@ class Graph:
             [-0.167362, -0.179096],
             [-0.167075, -0.175814]
         ]
+        self.location_names = [
+            'Depot',
+            'Abdul Basyir',
+            'Yudhistira',
+            'Icah',
+            'Sulomo',
+            'Handoyo/wardoyo',
+            'Multimediawara',
+            'Ibra',
+            'Handayani',
+            'Sami'
+        ]
         self.demands = [
             0,
             189,
@@ -47,6 +59,10 @@ class Graph:
         self.createDistance(self.nodes)
         if len(self.nodes) != len(self.demands):
             print "Demands and nodes must be related"
+            exit()
+
+        if len(self.nodes) != len(self.location_names):
+            print "Location Names and Nodes must be related"
             exit()
 
     def createDistance(self, locations):
@@ -81,6 +97,18 @@ class Graph:
     
     def getNodes(self):
         return self.nodes
+
+    def setLongLat(self, longlat):
+        self.longlat = longlat
+    
+    def getLongLat(self):
+        return self.longlat
+
+    def getLocationNames(self):
+        return self.location_names
+
+    def setLocationNames(self, location_names):
+        self.location_names = location_names
 
     def setPolar(self, polar):
         self.polar = polar

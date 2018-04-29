@@ -34,11 +34,21 @@ class Sweep:
                 [0, 0] # Put back the depot
             ]
             new_demands = [0]
+            new_longlat = [
+                graph.getLongLat()[center_node]
+            ]
+            new_location_names = [
+                graph.getLocationNames()[center_node]
+            ]
             for node in sweeped_locations:
                 new_nodes.append(node['location'])
                 new_demands.append(node['demands'])
+                new_longlat.append(node['longlat'])
+                new_location_names.append(node['location_name'])
             new_graph.setNodes(new_nodes)
             new_graph.setDemands(new_demands)
+            new_graph.setLongLat(new_longlat)
+            new_graph.setLocationNames(new_location_names)
             new_graph.createDistance(new_nodes)
             sweeped_graphs.append(new_graph)
             
@@ -54,6 +64,8 @@ class Sweep:
     def createPolar(self, graph, center_node):
         """Initialize nodes polar."""
         locations = graph.getNodes()
+        longlat = graph.getLongLat()
+        location_names = graph.getLocationNames()
         size = len(locations)
         polar = []
         for i in xrange(size):
@@ -65,9 +77,8 @@ class Sweep:
             else:
                 angle = 0.0
             polar.append({
-                'r':r, 'deg':deg, 'location': locations[i], 'demands': graph.getDemands()[i], 'used': False
+                'r':r, 'deg':deg, 'location': locations[i], 'longlat': longlat[i],'demands': graph.getDemands()[i], 'location_name': location_names[i],'used': False
             })
-            # polar[i]['angle'] = angle
         graph.setPolar(polar)
 
     def calcPolarDeg(self, x):
