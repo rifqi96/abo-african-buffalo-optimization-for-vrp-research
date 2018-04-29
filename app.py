@@ -1,5 +1,3 @@
-# Test Temporary
-
 from flask import Flask, request, jsonify, render_template, url_for, redirect
 from Main import Main
 from Graph import Graph
