@@ -4,6 +4,19 @@ import math
 class Graph:
 
     def __init__(self):
+        self.longlat = [
+            [-7.546792, 110.779582],
+            [-7.556067, 110.746186],
+            [-7.545412, 110.727043],
+            [-7.622216, 110.764844],
+            [-7.620503, 110.698880],
+            [-7.675409, 110.662907],
+            [-7.712136, 110.610118],
+            [-7.702098, 110.589836],
+            [-7.714154, 110.600486],
+            [-7.713867, 110.603768]
+        ]
+        # self.nodes = []
         self.nodes = [
             [0, 0],
             [-0.009275, -0.033396],
@@ -30,12 +43,11 @@ class Graph:
         ]
         self.distance = {}
 
+        # self.longLatToXY(self.longlat, 0) # Because the data are XY already
+        self.createDistance(self.nodes)
         if len(self.nodes) != len(self.demands):
             print "Demands and nodes must be related"
             exit()
-
-        # self.longLatToXY(self.nodes, 3) # Because the data are XY already
-        self.createDistance(self.nodes)
 
     def createDistance(self, locations):
         """Initialize distance array."""

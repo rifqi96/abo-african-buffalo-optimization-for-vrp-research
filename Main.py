@@ -18,18 +18,10 @@ class Main:
 
         self.graph = Graph()
         self.sweep = Sweep()
-        self.sweeped_graphs = self.sweep.run( self.graph, self.depot_index, self.max_demands )
+        self.sweeped_graphs = []
         self.sweeped_buffalos = []
 
         self.results = []
-        
-        # Generate the results!
-        results = self.generateResults(self.depot_index, self.lp, self.speed, self.buffalo_size, self.trial_size, self.bg_not_updating, self.max_demands)
-        if isinstance(results, dict):
-            if results['status'] is False:
-                print results['message']
-            else:
-                print self.printResult()
         
     def runABO(self, graph, counter = 0):
         Abo = ABO(self.depot_index, graph)
@@ -58,7 +50,7 @@ class Main:
             'buffalos': buffalos
         }
 
-    def generateResult(self, Abo):
+    def setResults(self, Abo):
         if Abo is None or Abo['buffalos'] is None or isinstance(Abo['buffalos'], list) is False:
             print "Error"
             exit()
@@ -130,7 +122,7 @@ class Main:
 
         # Generate the result!
         for buffalo in self.sweeped_buffalos:
-            self.generateResult(buffalo)
+            self.setResults(buffalo)
 
         return {
             'status':True,
@@ -138,11 +130,17 @@ class Main:
         }
 
     def printResult(self):
-        print "Demands table",self.graph.getDemands()
-        for Abo in self.results:
-            print "Rute ke",self.results.index(Abo)+1,"adalah:"
-            print "Kerbau teroptimal adalah kerbau ke",Abo['buffalo_no'],"dengan total jarak",Abo['buffalo'].getTotalDistance()
-            print "Langkah tempuh kerbau ke",Abo['buffalo_no'],"adalah",Abo['real_nodes']
-            print "Total demands:",Abo['total_demands']
+        # Generate the results!
+        results = self.generateResults(self.depot_index, self.lp, self.speed, self.buffalo_size, self.trial_size, self.bg_not_updating, self.max_demands)
+        if isinstance(results, dict):
+            if results['status'] is False:
+                print results['message']
+            else:
+                print "Demands table",self.graph.getDemands()
+                for Abo in self.results:
+                    print "Rute ke",self.results.index(Abo)+1,"adalah:"
+                    print "Kerbau teroptimal adalah kerbau ke",Abo['buffalo_no'],"dengan total jarak",Abo['buffalo'].getTotalDistance()
+                    print "Langkah tempuh kerbau ke",Abo['buffalo_no'],"adalah",Abo['real_nodes']
+                    print "Total demands:",Abo['total_demands']
 
 # Main().printResult()

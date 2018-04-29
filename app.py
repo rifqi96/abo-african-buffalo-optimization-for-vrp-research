@@ -16,6 +16,7 @@ def results():
     with app.app_context():
         data = []
         main = Main()
+        main.generateResults()
         for res in main.results:
             data.append({
                 'buffalo_no':res['buffalo_no'],
