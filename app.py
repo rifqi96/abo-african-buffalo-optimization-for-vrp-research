@@ -8,8 +8,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'abo-vrp-anya')
 
 @app.route('/')
 def home():
-    with app.app_context():
-        return render_template('index.html')
+    return render_template('index.html')
 
 @app.route('/api/results')
 def results():
