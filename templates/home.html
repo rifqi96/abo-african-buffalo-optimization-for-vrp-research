@@ -98,6 +98,7 @@
             $.ajax({
                 url: '{{ url_for("results") }}',
                 method: 'get',
+                cache: false,
                 success: function (res) {
                     if ($('.result_container').not(':visible')) {
                         $('.result_container').fadeIn(800);
