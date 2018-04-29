@@ -70,9 +70,14 @@ def getNodes():
                 'name':graph.getLocationNames()[i],
                 'coor':graph.getLongLat()[i],
                 'node':graph.getNodes()[i],
-                'demands':graph.getDemands()[i]
+                'demands':graph.getDemands()[i],
+                'distances': graph.getDistance()[i]
             })
         return jsonify(data)
+
+@app.errorhandler(404)
+def pageNotFound(error):
+    return jsonify(message='Hi fella, are you lost?'), 404
 
 if __name__ == '__main__':
     app.run()
