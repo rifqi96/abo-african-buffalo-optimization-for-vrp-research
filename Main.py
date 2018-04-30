@@ -65,7 +65,7 @@ class Main:
         # Calculate total demands
         total_demands = 0
         visited_nodes = optimal_buffalo.getVisitedNodes()
-        real_nodes = []
+        real_nodes = [self.depot_index]
         for i in xrange(len(visited_nodes)):
             total_demands += Abo['graph'].getDemands()[visited_nodes[i]]
             real_nodes.append(self.graph.getNodes().index(Abo['graph'].getNodes()[visited_nodes[i]]))
