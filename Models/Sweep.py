@@ -82,7 +82,11 @@ class Sweep:
         graph.setPolar(polar)
 
     def calcPolarDeg(self, x):
-        radian = math.atan2(x[1],x[0])
+        # radian = math.atan2(x[1],x[0]) # Changed the formula as in the journal
+        try:
+            radian = math.atan(x[0]/x[1])
+        except ZeroDivisionError:
+            radian = 0
         degrees = math.degrees(radian)
         if degrees < 0:
             degrees = degrees * (-1) + 90 # It converts minus degree to be over 90 degrees basis

@@ -1,5 +1,7 @@
 import os, sys
 sys.path.append(os.path.dirname(__file__)+'/Models/')
+# Uncomment code below and comment code above if you want to debug using python through terminal
+# sys.path.append(os.path.dirname(__file__)+'Models/')
 from ABO import ABO
 from Graph import Graph
 from Sweep import Sweep
@@ -143,4 +145,5 @@ class Main:
                     print "Langkah tempuh kerbau ke",Abo['buffalo_no'],"adalah",Abo['real_nodes']
                     print "Total demands:",Abo['total_demands']
 
+# Uncomment code below to see the results in terminal
 # Main().printResult()

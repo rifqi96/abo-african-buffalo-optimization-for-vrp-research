@@ -91,16 +91,17 @@ class ABO:
         return ((w[0]**ABO.lp[0]) * ab * (m[0] ** ABO.lp[1]) * ab) / ((w[1]**ABO.lp[0]) * ab * (m[1] ** ABO.lp[1]) * ab)
 
     def fobj(self, x):
-        a = 1
-        b = 5.1/(4*3.14**2)
-        c = 5/math.pi		
-        r = 6
-        s = 10
-        t = 1/(8*math.pi)
+        # a = 1
+        # b = 5.1/(4*3.14**2)
+        # c = 5/math.pi		
+        # r = 6
+        # s = 10
+        # t = 1/(8*math.pi)
         
-        term1 = a * (x[1] - b*x[0]**2 + c*x[0] - r)**2
-        term2 = s*(1-t)*math.cos(x[0])
-        f = term1 +term2 +s
+        # term1 = a * (x[1] - b*x[0]**2 + c*x[0] - r)**2
+        # term2 = s*(1-t)*math.cos(x[0])
+        # f = term1 +term2 +s
+        f = math.pow((x[0] - 1), 2) + math.pow((x[1] - 1), 2)
         return f
     ### End Formula Functions ###
 
@@ -142,12 +143,12 @@ class ABO:
 
         # Do the math
         newMk = self.newMk(m, w, bp, bg)
-        newWk = self.newWk(m, w)
-        
-        if self.fobj(newMk) < self.fobj(m):
-            self.m = newMk
-        if self.fobj(newMk) < self.fobj(bp):
-            self.bp = newMk
+        self.m = newMk
+        # if self.fobj(newMk) < self.fobj(m):
+        #     self.m = newMk
+        newWk = self.newWk(self.m, w)
+        if self.fobj(newWk) < self.fobj(bp):
+            self.bp = newWk
 
         self.visited_edges.append([self.current_index, self.next_index])
         self.visited_nodes.append(self.next_index)
