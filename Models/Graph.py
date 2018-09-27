@@ -89,9 +89,9 @@ class Graph:
     
     def calcDistance(self, x1, y1, x2, y2):
         # Manhattan distance
-        # dist = abs(x1 - x2) + abs(y1 - y2)
+        dist = abs(x1 - x2) + abs(y1 - y2)
         # Euclidean distance
-        dist = math.sqrt(math.pow((x2 - x1), 2) + math.pow((y2 - y1), 2))
+        # dist = math.sqrt(math.pow((x2 - x1), 2) + math.pow((y2 - y1), 2))
         return dist
 
     def setNodes(self, nodes):
