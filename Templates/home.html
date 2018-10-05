@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}Home{% endblock %}
+
 {% block css %}
 <style>
     body {
@@ -13,132 +15,26 @@
     .row {
         margin-bottom: 50px;
     }
+
+    .marker {
+        height: 16px;
+        width: 16px;
+        background-color: #3bb2d0;
+        border: 3px solid white;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    /* .mapboxgl-popup {
+      max-width: 200px;
+    } */
+
+    .mapboxgl-popup-content {
+        text-align: center;
+        font-family: 'Gugi', cursive;
+    }
 </style>
 {% endblock %}
-
-{% block js %}
-<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-    crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-    crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-    crossorigin="anonymous"></script>
-
-<script>
-    $(document).ready(function () {
-        $('#location_tbl').hide();
-        $('.result_container').hide();
-        $('#location_tbl').find('thead').after('<tbody></tbody>');
-        $('#result_tbl').find('thead').after('<tbody></tbody>');
-        $('#distance_tbl').find('thead').after('<tbody></tbody>');
-
-        $.ajax({
-            url: '{{ url_for("getNodes") }}',
-            method: 'get',
-            success: function (res) {
-                console.log(res);
-                var row = '';
-                for (var i in res) {
-                    row += '<tr>' +
-                        '<td>' + i + '</td>' +
-                        '<td><a href="#" data-toggle="modal" data-target="#distance_modal" title="Tekan untuk lihat biaya jarak antar lokasi" class="show_distance_modal" data-id="' + i + '">' + res[i].name + '</a></td>' +
-                        '<td>' + res[i].coor[0] + '</td>' +
-                        '<td>' + res[i].coor[1] + '</td>' +
-                        '<td>' + res[i].demands + '</td>' +
-                        '</tr>';
-                }
-                $('#location_tbl').find('tbody').append(row);
-                $('.show_distance_modal').tooltip();
-                $('.show_distance_modal').click(function (e) {
-                    e.preventDefault();
-                    $('#distance_tbl').find('tbody').empty();
-
-                    var data = {
-                        name: '',
-                        distances: []
-                    };
-                    for (var i in res) {
-                        if (i == $(this).data('id')) {
-                            data.name = res[i].name;
-                            data.distances = res[i].distances;
-                            break;
-                        }
-                    }
-                    var row = '';
-                    for (var i in data.distances) {
-                        row += '<tr>' +
-                            '<td>' + i + '</td>' +
-                            '<td>' + res[i].name + '</td>' +
-                            '<td>' + data.distances[i] + '</td>' +
-                            '</tr>';
-                    }
-                    $('#distance_tbl').find('tbody').append(row);
-                    $('.distance_modal_name').text(data.name);
-
-                    console.log(data);
-                });
-            },
-            error: function (res) {
-                alert('Error on getting the location table. Please see logs for more info');
-                console.log(res);
-            }
-        });
-        $('.location_btn').click(function () {
-            $('#location_tbl').toggle(function () {
-                if ($(this).is(':visible')) {
-                    $('.location_btn').text('Sembunyikan');
-                }
-                else {
-                    $('.location_btn').text('Tampilkan');
-                }
-            });
-        });
-
-        $('.result_btn').click(function () {
-            $.ajax({
-                url: '{{ url_for("results") }}',
-                method: 'get',
-                cache: false,
-                success: function (res) {
-                    if ($('.result_container').not(':visible')) {
-                        $('.result_container').fadeIn(800);
-                    }
-                    $('#result_tbl').find('tbody').empty();
-                    var row = '';
-                    var num = 1;
-                    for (var i in res) {
-                        var routes = '0 -> ';
-                        for (var j in res[i].routes) {
-                            if (j == (res[i].routes.length - 1)) {
-                                routes += res[i].routes[j];
-                                break;
-                            }
-                            routes += res[i].routes[j] + ' -> ';
-                        }
-                        row += '<tr>' +
-                            '<td>' + num + '</td>' +
-                            '<td>' + res[i].buffalo_no + '</td>' +
-                            '<td>' + routes + '</td>' +
-                            '<td>' + res[i].cost + '</td>' +
-                            '<td>' + res[i].total_demands + '</td>' +
-                            '</tr>';
-
-                        num++;
-                    }
-                    $('#result_tbl').find('tbody').append(row);
-
-                    console.log(res);
-                },
-                error: function (res) {
-                    alert('Error on generating result. Please see logs for more info');
-                    console.log(res);
-                }
-            });
-        });
-    });
-</script>
-{% endblock %}
-
 
 {% block main %}
 <div class="container container-margin">
@@ -175,6 +71,12 @@
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col">
+            <div id='map' style='width: 100%; height: 300px;'></div>
+        </div>
+    </div>
 </div>
 
 <div class="modal" id="distance_modal" tabindex="-1" role="dialog">
@@ -203,4 +105,275 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+
+<script src='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>
+
+<script>
+    $(document).ready(function () {
+        $('#location_tbl').hide();
+        $('.result_container').hide();
+        $('#location_tbl').find('thead').after('<tbody></tbody>');
+        $('#result_tbl').find('thead').after('<tbody></tbody>');
+        $('#distance_tbl').find('thead').after('<tbody></tbody>');
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoicmlmcWk5NiIsImEiOiJjamZ6bHVwcnk1azRmMnhzMnA0aGg0N2txIn0.qxNKPWPMLvfkcvhMLu1INA';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v9'
+        });
+        var depot = null, nodes = null;
+
+        $.ajax({
+            url: '{{ url_for("getNodes") }}',
+            method: 'get',
+            async: false,
+            success: function (res) {
+                nodes = res;
+                var row = '';
+                var features = [];
+                var center = null;
+                for (var i in res) {
+                    row += '<tr>' +
+                        '<td>' + i + '</td>' +
+                        '<td><a href="#" data-toggle="modal" data-target="#distance_modal" title="Tekan untuk lihat biaya jarak antar lokasi" class="show_distance_modal" data-id="' + i + '">' + res[i].name + '</a></td>' +
+                        '<td>' + res[i].coor[0] + '</td>' +
+                        '<td>' + res[i].coor[1] + '</td>' +
+                        '<td>' + res[i].demands + '</td>' +
+                        '</tr>';
+                    if (res[i].name == "Depot") {
+                        depot = res[i];
+                    }
+                    else if (res[i].name == "Sulomo") {
+                        center = res[i];
+                    }
+                    features.push({
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [res[i].coor[1], res[i].coor[0]]
+                        },
+                        properties: {
+                            title: res[i].name,
+                            description: '[' + res[i].coor[1] + ' , ' + res[i].coor[0] + ']'
+                        }
+                    });
+                }
+                $('#location_tbl').find('tbody').append(row);
+                map.on('load', function () {
+                    var geojson = {
+                        type: 'FeatureCollection',
+                        features: features
+                    };
+
+                    // add markers to map
+                    geojson.features.forEach(function (marker) {
+                        // create a HTML element for each feature
+                        var el = document.createElement('div');
+                        el.className = 'marker';
+
+                        // make a marker for each feature and add to the map
+                        new mapboxgl.Marker(el)
+                            .setLngLat(marker.geometry.coordinates)
+                            .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
+                                .setHTML('<h4>' + marker.properties.title + '</h4><p>' + marker.properties.description + '</p>'))
+                            .addTo(map);
+                    });
+
+
+                    // map.loadImage('http://www.clker.com/cliparts/W/7/N/w/s/D/marker.svg.thumb.png', function (error, image) {
+                    //     if (error) throw error;
+                    //     map.addImage('marker', image);
+                    //     map.addLayer({
+                    //         "id": "points",
+                    //         "type": "symbol",
+                    //         "source": {
+                    //             "type": "geojson",
+                    //             "data": {
+                    //                 geojson
+                    //             }
+                    //         },
+                    //         "layout": {
+                    //             "icon-image": "marker",
+                    //             "icon-size": 0.25
+                    //         }
+                    //     });
+                    // });
+
+                    map.flyTo({
+                        center: [
+                            center.coor[1],
+                            center.coor[0]
+                        ],
+                        zoom: 10,
+                        // pitch: 45,
+                        // bearing: -17.6,
+                        // hash: true
+                    });
+                });
+                $('.show_distance_modal').tooltip();
+                $('.show_distance_modal').click(function (e) {
+                    e.preventDefault();
+                    $('#distance_tbl').find('tbody').empty();
+
+                    var data = {
+                        name: '',
+                        distances: []
+                    };
+                    for (var i in res) {
+                        if (i == $(this).data('id')) {
+                            data.name = res[i].name;
+                            data.distances = res[i].distances;
+                            break;
+                        }
+                    }
+                    var row = '';
+                    for (var i in data.distances) {
+                        row += '<tr>' +
+                            '<td>' + i + '</td>' +
+                            '<td>' + res[i].name + '</td>' +
+                            '<td>' + data.distances[i] + '</td>' +
+                            '</tr>';
+                    }
+                    $('#distance_tbl').find('tbody').append(row);
+                    $('.distance_modal_name').text(data.name);
+                });
+            },
+            error: function (res) {
+                alert('Error on getting the location table. Please see logs for more info');
+                console.log(res);
+            }
+        });
+        $('.location_btn').click(function () {
+            $('#location_tbl').toggle(function () {
+                if ($(this).is(':visible')) {
+                    $('.location_btn').text('Sembunyikan');
+                }
+                else {
+                    $('.location_btn').text('Tampilkan');
+                }
+            });
+        });
+
+        $('.result_btn').click(function () {
+            $.ajax({
+                url: '{{ url_for("results") }}',
+                method: 'get',
+                cache: false,
+                success: function (res) {
+                    if ($('.result_container').not(':visible')) {
+                        $('.result_container').fadeIn(800);
+                    }
+                    $('#result_tbl').find('tbody').empty();
+                    var route = {};
+                    // A single point that animates along the route.
+                    // Coordinates are initially set to origin.
+                    var origin_point = {
+                        "type": "FeatureCollection",
+                        "features": [{
+                            "type": "Feature",
+                            "properties": {},
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [depot.coor[1], depot.coor[0]]
+                            }
+                        }]
+                    };
+                    var routes = [];
+                    var row = '';
+                    var num = 1;
+                    for (var i in res) {
+                        var route_txt = '';
+                        var coordinates = null;
+                        var route_features = [];
+                        for (var j in res[i].routes) {
+                            if (j > 0) {
+                                var curr_node = res[i].routes[j - 1];
+                                var next_node = res[i].routes[j];
+                                route_features.push({
+                                    "type": "Feature",
+                                    "geometry": {
+                                        "type": "LineString",
+                                        "coordinates": [
+                                            [nodes[curr_node].coor[1], nodes[curr_node].coor[0]],
+                                            [nodes[next_node].coor[1], nodes[next_node].coor[0]]
+                                        ]
+                                    }
+                                });
+                            }
+                            if (j == (res[i].routes.length - 1)) {
+                                route_txt += res[i].routes[j];
+                                break;
+                            }
+                            route_txt += res[i].routes[j] + ' -> ';
+                        }
+                        routes.push({
+                            "type": "FeatureCollection",
+                            "features": route_features
+                        });
+                        row += '<tr>' +
+                            '<td>' + num + '</td>' +
+                            '<td>' + res[i].buffalo_no + '</td>' +
+                            '<td>' + route_txt + '</td>' +
+                            '<td>' + res[i].cost + '</td>' +
+                            '<td>' + res[i].total_demands + '</td>' +
+                            '</tr>';
+
+                        num++;
+                    }
+                    $('#result_tbl').find('tbody').append(row);
+
+                    for (var i in routes) {
+                        var route = routes[i];
+                        for (var j in route.features) {
+                            if (map.getLayer('route_' + i + '_' + j) != null) {
+                                map.removeLayer('route_' + i + '_' + j);
+                            }
+                            if (map.getSource('route_source_' + i + '_' + j) != null) {
+                                map.removeSource('route_source_' + i + '_' + j);
+                            }
+
+                            // Add a source and layer displaying a point which will be animated in a circle.
+                            map.addSource('route_source_' + i + '_' + j, {
+                                "type": "geojson",
+                                "data": route
+                            });
+
+                            map.addLayer({
+                                "id": "route_" + i + '_' + j,
+                                "source": "route_source_" + i + '_' + j,
+                                "type": "line",
+                                "paint": {
+                                    "line-width": 2,
+                                    "line-color": getRandomColor()
+                                }
+                            });
+                        }
+                    }
+                },
+                error: function (res) {
+                    alert('Error on generating result. Please see logs for more info');
+                    console.log(res);
+                }
+            });
+        });
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+    });
+</script>
 {% endblock %}
