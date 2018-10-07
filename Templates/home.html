@@ -25,6 +25,15 @@
         cursor: pointer;
     }
 
+    .marker-depot {
+        height: 16px;
+        width: 16px;
+        background-color: maroon;
+        border: 3px solid white;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
     /* .mapboxgl-popup {
       max-width: 200px;
     } */
@@ -55,8 +64,16 @@
     </div>
 
     <div class="row">
+        <div class="col-2">Jumlah Kerbau:</div>
+        <div class="col"><input type="text" class="input_buffalo_size" name="buffalo_size" placeholder="Default 200"></div>
+    </div>
+    <div class="row">
         <div class="col">
             <button class="btn btn-success btn-lg btn-block result_btn">Jalankan algoritma ABO</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             <div class="result_container">
                 <h2>Tabel Hasil</h2>
                 <table id="result_tbl" class="table table-striped tabe-hover">
@@ -128,6 +145,8 @@
         mapboxgl.accessToken = 'pk.eyJ1IjoicmlmcWk5NiIsImEiOiJjamZ6bHVwcnk1azRmMnhzMnA0aGg0N2txIn0.qxNKPWPMLvfkcvhMLu1INA';
         var map = new mapboxgl.Map({
             container: 'map',
+            zoom: 2,
+            center: [110.779582, -7.546792],
             style: 'mapbox://styles/mapbox/streets-v9'
         });
         var depot = null, nodes = null;
@@ -175,10 +194,15 @@
                     };
 
                     // add markers to map
-                    geojson.features.forEach(function (marker) {
+                    geojson.features.forEach(function (marker, i) {
                         // create a HTML element for each feature
                         var el = document.createElement('div');
-                        el.className = 'marker';
+                        if (i === 0) {
+                            el.className = 'marker-depot';
+                        }
+                        else {
+                            el.className = 'marker';
+                        }
 
                         // make a marker for each feature and add to the map
                         new mapboxgl.Marker(el)
@@ -188,35 +212,17 @@
                             .addTo(map);
                     });
 
-
-                    // map.loadImage('http://www.clker.com/cliparts/W/7/N/w/s/D/marker.svg.thumb.png', function (error, image) {
-                    //     if (error) throw error;
-                    //     map.addImage('marker', image);
-                    //     map.addLayer({
-                    //         "id": "points",
-                    //         "type": "symbol",
-                    //         "source": {
-                    //             "type": "geojson",
-                    //             "data": {
-                    //                 geojson
-                    //             }
-                    //         },
-                    //         "layout": {
-                    //             "icon-image": "marker",
-                    //             "icon-size": 0.25
-                    //         }
-                    //     });
-                    // });
-
                     map.flyTo({
                         center: [
                             center.coor[1],
                             center.coor[0]
                         ],
                         zoom: 10,
-                        // pitch: 45,
-                        // bearing: -17.6,
-                        // hash: true
+                        speed: 1.2,
+                        curve: 1,
+                        easing(t) {
+                            return t;
+                        },
                     });
                 });
                 $('.show_distance_modal').tooltip();
@@ -263,9 +269,10 @@
             });
         });
 
-        $('.result_btn').click(function () {
+        function getResult() {
             $.ajax({
                 url: '{{ url_for("results") }}',
+                data: { buffalo_size: $('.input_buffalo_size').val() },
                 method: 'get',
                 cache: false,
                 success: function (res) {
@@ -364,6 +371,13 @@
                     console.log(res);
                 }
             });
+        }
+
+        $('.result_btn').click(getResult);
+        $('.input_buffalo_size').keypress(function(e) {
+            if (e.which === 13) {
+                getResult();
+            }
         });
 
         function getRandomColor() {

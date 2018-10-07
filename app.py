@@ -22,7 +22,11 @@ def results():
     with app.app_context():
         data = []
         main = Main()
-        main.generateResults()
+        try:
+            buffalo_size = int(request.args.get('buffalo_size'))
+            main.generateResults(0, [0.6, 0.5], 0.9, buffalo_size, 50, 3, 3000)
+        except ValueError:
+            main.generateResults()
         for res in main.results:
             data.append({
                 'buffalo_no':res['buffalo_no'],
