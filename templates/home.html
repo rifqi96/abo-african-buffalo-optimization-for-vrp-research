@@ -12,6 +12,13 @@
         margin-top: 50px;
     }
 
+    h1 {
+        font-size: 2rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+
     .row {
         margin-bottom: 50px;
     }
@@ -53,23 +60,18 @@
             <button class="btn btn-sm btn-primary location_btn">Tampilkan</button>
             <table id="location_tbl" class="table table-striped table-hover">
                 <thead>
-                    <th>#</th>
-                    <th>Nama</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                    <th>Demands</th>
+                    <th>Kode</th>
+                    <th>Nama Agen</th>
+                    <th>Lokasi Agen</th>
+                    <th>Permintaan</th>
                 </thead>
             </table>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-2">Total Buffalo:</div>
-        <div class="col"><input type="text" class="input_buffalo_size" name="buffalo_size" placeholder="Default 200"></div>
-    </div>
-    <div class="row">
         <div class="col">
-            <button class="btn btn-success btn-lg btn-block result_btn">Jalankan Algoritma</button>
+            <button class="btn btn-success btn-lg btn-block result_btn">Tentukan Rute Optimal</button>
         </div>
     </div>
     <div class="row">
@@ -78,11 +80,11 @@
                 <h2>Tabel Hasil</h2>
                 <table id="result_tbl" class="table table-striped tabe-hover">
                     <thead>
-                        <th>Cluster</th>
+                        <th>Rute ke -</th>
                         <th>Buffalo ke -</th>
-                        <th>Optimized Route</th>
-                        <th>Optimized Distance/Cost</th>
-                        <th>Optimized Capacity</th>
+                        <th>Rute</th>
+                        <th>Jarak Tempuh</th>
+                        <th>Kapasitas Angkut</th>
                     </thead>
                 </table>
             </div>
@@ -147,9 +149,12 @@
             container: 'map',
             zoom: 2,
             center: [110.779582, -7.546792],
-            style: 'mapbox://styles/mapbox/streets-v9'
+            style: 'mapbox://styles/mapbox/streets-v9',
+            attribution: false,
         });
         var depot = null, nodes = null;
+
+        map.addControl(new mapboxgl.FullscreenControl());
 
         $.ajax({
             url: '{{ url_for("getNodes") }}',
@@ -163,9 +168,8 @@
                 for (var i in res) {
                     row += '<tr>' +
                         '<td>' + i + '</td>' +
-                        '<td><a href="#" data-toggle="modal" data-target="#distance_modal" title="Tekan untuk lihat biaya jarak antar lokasi" class="show_distance_modal" data-id="' + i + '">' + res[i].name + '</a></td>' +
-                        '<td>' + res[i].coor[0] + '</td>' +
-                        '<td>' + res[i].coor[1] + '</td>' +
+                        '<td>' + res[i].name + '</td>' +
+                        '<td>' + res[i].address + '</td>' +
                         '<td>' + res[i].demands + '</td>' +
                         '</tr>';
                     if (res[i].name == "Depot") {
@@ -273,7 +277,7 @@
         function getResult() {
             $.ajax({
                 url: '{{ url_for("results") }}',
-                data: { buffalo_size: $('.input_buffalo_size').val() },
+                data: { buffalo_size: 100 },
                 method: 'get',
                 cache: false,
                 success: function (res) {
@@ -331,8 +335,8 @@
                             '<td>' + num + '</td>' +
                             '<td>' + res[i].buffalo_no + '</td>' +
                             '<td>' + route_txt + '</td>' +
-                            '<td>' + res[i].cost + '</td>' +
-                            '<td>' + res[i].total_demands + '</td>' +
+                            '<td>' + res[i].km + ' km</td>' +
+                            '<td>' + res[i].total_demands + ' eksemplar</td>' +
                             '</tr>';
 
                         num++;

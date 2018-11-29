@@ -32,6 +32,7 @@ def results():
                 'buffalo_no':res['buffalo_no'],
                 'total_demands':res['total_demands'],
                 'routes':res['real_nodes'],
+                'km': res['km'],
                 'graph':{
                     'name':res['graph'].getLocationNames(),
                     'coor':res['graph'].getLongLat(),
@@ -81,6 +82,7 @@ def getNodes():
             data.append({
                 'name':graph.getLocationNames()[i],
                 'coor':graph.getLongLat()[i],
+                'address':graph.getAddresses()[i],
                 'node':graph.getNodes()[i],
                 'demands':graph.getDemands()[i],
                 'distances': graph.getDistance()[i]

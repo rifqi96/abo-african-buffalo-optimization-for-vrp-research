@@ -41,6 +41,18 @@ class Graph:
             'Handayani',
             'Sami'
         ]
+        self.addresses = [
+            'Jl. Adisucipto No. 190',
+            'Sedahromo Lor Kartasura',
+            'Tisanan Wirogunan Kartasura',
+            'Kios Mayungan Trunuh Klaten',
+            'Jalan Raya Delanggu',
+            'Karangwuni Ceper Klaten',
+            'Kios Pasar Srago Klaten',
+            'Jalan RA Kartini Klaten',
+            'Jalan RA Kartini Klaten',
+            'Terminal Klaten'
+        ]
         self.demands = [
             0,
             189,
@@ -111,6 +123,12 @@ class Graph:
 
     def setLocationNames(self, location_names):
         self.location_names = location_names
+
+    def getAddresses(self):
+        return self.addresses
+    
+    def setAddresses(self, addresses):
+        self.addresses = addresses
 
     def setPolar(self, polar):
         self.polar = polar
